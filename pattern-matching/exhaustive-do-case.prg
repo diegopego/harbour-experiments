@@ -1,0 +1,84 @@
+#include "hbclass.ch"
+
+#define EOC ;; // END OF COMMAND. ALLOWS TO HAVE MORE THAN ONE EXPRESSION ON INDIRECT # DIRECTIVES
+
+// fake types
+#xtranslate AS DECIMAL =>
+#xtranslate AS STRING =>
+
+// this pragma create classes using an F#-like syntax for emulating discriminated unions
+#xcommand TYPE <type_name> [fields <uField1> OF <uType1> [, <uField2> OF <uType2>]] => ;
+    CLASS <type_name>;;
+    DATA <uField1>;;
+    [;DATA <uField2>];;
+    METHOD New(<uField1>);;
+    ENDCLASS ;;
+    METHOD New(<uField1>) CLASS <type_name>;; 
+    ::<uField1> := <uField1>;;
+    return Self;;
+    CLASS <uField1>;;
+    DATA myProp;;
+    METHOD New(myProp);;
+    ENDCLASS ;;
+    METHOD New(myProp) CLASS <uField1>;; 
+    ::myProp := myProp;;
+    return Self;;
+    [; CLASS <uField2>;;
+    DATA myProp;;
+    METHOD New(myProp);;
+    ENDCLASS ;;
+    METHOD New(myProp) CLASS <uField2>;; 
+    ::myProp := myProp;;
+    return Self;;
+    ];;
+
+// https://fsharpforfunandprofit.com/posts/convenience-types/
+type USAddress fields Street of STRING, City of STRING
+type UKAddress fields Street of STRING, Town of STRING , PostCode of STRING
+
+type Address =
+   | US of USAddress
+   | UK of UKAddress
+type Person =
+   Name of string; Address of Address
+
+let alice = 
+   Name="Alice"
+   Address=US Street "123 Main" City "LA" State "CA" Zip "91201"
+let bob =
+   Name="Bob"
+   Address=UK Street "221b Baker St" Town "London" PostCode="NW1 6XE"
+
+PROCEDURE Main()
+    // type payment = 
+    // | MONEY
+    // | CREDIT_CARD
+    compiler_should_raise_error_on_invalid_case()
+return
+
+// este c¢digo Ç ser interessante por ter controle c°clico nos pragmas
+// Ele avisa via em tempo de compilaá∆o ao realizar um case inesperado.
+function compiler_should_raise_error_on_invalid_case(employee)
+    // por brevidade, n∆o criei as diretivas pra o match, mas aqui estou simulando:
+    // match my_payment as PAYMENT. isso criaria as seguintes diretivas:
+    #command case <var1> => ;
+        #warning "invalid" ; <@> case <var1>
+    // aqui faáo a suposiá∆o que typeof usa string para verificar o tipo, mas isso pode ser usado de outras formas, incluindo invocando a classe. ex.: Money():new():type
+    #command case MONEY [<var1>] => ;
+            DECLARED case typeof(my_payment,"MONEY") [<var1>]
+    #command case CREDIT_CARD [<var1>] => ;
+            DECLARED case typeof(my_payment,"CREDIT_CARD") [<var1>]
+    #command DECLARED case [<var1>] => ;
+            <@> case [<var1>]
+    do case
+        case MONEY
+            ? "MONEY"
+        case MONEY .and. my_payment:value > 0
+            ? "MONEY .and. my_payment:value > 0"
+        case INVALID_PAYMENT
+            // should render compiler error
+        case CREDIT_CARD .and. my_payment:value > 0
+            ? "CREDIT_CARD .and. my_payment:value > 0"
+    endcase
+return nil
+// endregion recursividade, referància c°clica, referencia ciclica
