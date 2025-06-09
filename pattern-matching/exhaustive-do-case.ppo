@@ -1,0 +1,49 @@
+#line 24 "exhaustive-do-case.prg"
+_HB_CLASS STRING ; function STRING ( ... ) ; STATIC s_oClass ; LOCAL nScope, oClass, oInstance ; IF s_oClass == NIL .AND. __clsLockDef( @s_oClass ) ; BEGIN SEQUENCE ; nScope := 1 ; ( ( nScope ) ) ; oClass := iif( .F.,, HBClass():new( "STRING", iif( .F., { }, { @HBObject() } ), @STRING() ) ) ;
+    _HB_MEMBER type(); oClass:AddMethod( "type", @STRING_type(), nScope + iif( .F., 8, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ) )
+oClass:Create() ; ; ALWAYS ; __clsUnlockDef( @s_oClass, oClass ) ; end ; oInstance := oClass:Instance() ; IF __objHasMsg( oInstance, "InitClass" ) ; oInstance:InitClass( ... ) ; END ; RETURN oInstance ; END ; RETURN s_oClass:Instance() AS CLASS STRING ;
+
+static FUNCTION STRING_type() ; local Self AS CLASS STRING := QSelf() AS CLASS STRING
+return "STRING"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HB_CLASS USAddress ; function USAddress ( ... ) ; STATIC s_oClass ; LOCAL nScope, oClass, oInstance ; IF s_oClass == NIL .AND. __clsLockDef( @s_oClass ) ; BEGIN SEQUENCE ; nScope := 1 ; ( ( nScope ) ) ; oClass := iif( .F.,, HBClass():new( "USAddress", iif( .F., { }, { @HBObject() } ), @USAddress() ) ) ; _HB_MEMBER New(); oClass:AddMethod( "New", @USAddress_New(), nScope + iif( .F., 8, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ) ) ; _HB_MEMBER type(); oClass:AddMethod( "type", @USAddress_type(), nScope + iif( .F., 8, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ) ); _HB_MEMBER { fields } ; oClass:AddMultiData(,, nScope + iif( .F., 16, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ), {"fields"}, .F. ) ; oClass:Create() ; ; ALWAYS ; __clsUnlockDef( @s_oClass, oClass ) ; end ; oInstance := oClass:Instance() ; IF __objHasMsg( oInstance, "InitClass" ) ; oInstance:InitClass( ... ) ; END ; RETURN oInstance ; END ; RETURN s_oClass:Instance() AS CLASS USAddress ; static FUNCTION USAddress_New() ; local Self AS CLASS USAddress := QSelf() AS CLASS USAddress; ::fields := {"fields" => {"field" => "Street", "type" => STRING():new():type()}}; return self; static FUNCTION USAddress_type() ; local Self AS CLASS USAddress := QSelf() AS CLASS USAddress; return upper("USAddress")
+
+
+
+procedure main()
+    local address := USAddress():new()
+    QOut( address )
+return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HB_CLASS USAddress ; function USAddress ( ... ) ; STATIC s_oClass ; LOCAL nScope, oClass, oInstance ; IF s_oClass == NIL .AND. __clsLockDef( @s_oClass ) ; BEGIN SEQUENCE ; nScope := 1 ; ( ( nScope ) ) ; oClass := iif( .F.,, HBClass():new( "USAddress", iif( .F., { }, { @HBObject() } ), @USAddress() ) ) ; _HB_MEMBER New(); oClass:AddMethod( "New", @USAddress_New(), nScope + iif( .F., 8, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ) ) ; _HB_MEMBER type(); oClass:AddMethod( "type", @USAddress_type(), nScope + iif( .F., 8, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ) ); _HB_MEMBER { fields } ; oClass:AddMultiData(,, nScope + iif( .F., 16, 0 ) + iif( .F., 256, 0 ) + iif( .F., 2048, 0 ), {"fields"}, .F. ) ; oClass:Create() ; ; ALWAYS ; __clsUnlockDef( @s_oClass, oClass ) ; end ; oInstance := oClass:Instance() ; IF __objHasMsg( oInstance, "InitClass" ) ; oInstance:InitClass( ... ) ; END ; RETURN oInstance ; END ; RETURN s_oClass:Instance() AS CLASS USAddress ; static FUNCTION USAddress_New() ; local Self AS CLASS USAddress := QSelf() AS CLASS USAddress; ::fields := {"fields" => {"field" => "Street", "type" => STRING():new():type()}}; return self; static FUNCTION USAddress_type() ; local Self AS CLASS USAddress := QSelf() AS CLASS USAddress; return upper("USAddress")
