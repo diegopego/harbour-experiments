@@ -23,6 +23,18 @@ FUNCTION getType( xVal )
  return schema
 
 
+//  eval(schema:validate())
+//  type_validate(schema)
+
+//  pessoa:new("diego", "rui prates")
+
+
+//  pessonova := clone(pessoa, {"diego", "rui prates"})
+
+
+//  pessoa():new():nome("diego"):endereco("prates"):enviarPorEmail()
+
+
  FUNCTION typeRegistry( cAction, cNamespace, cTypeName, xValue )
     LOCAL cFullName := Lower( AllTrim( cNamespace + "::" + cTypeName ) )
  

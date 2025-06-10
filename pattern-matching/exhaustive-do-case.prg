@@ -1,4 +1,4 @@
-#include "hbclass.ch"
+//#include "hbclass.ch"
 #define EOC ;; // END OF COMMAND. ALLOWS TO HAVE MORE THAN ONE EXPRESSION ON INDIRECT # DIRECTIVES
 
 // references
@@ -38,60 +38,138 @@ return "STRING"
         data fields ;;
     ENDCLASS;;
         method New() class <type_name>;;
-            ::fields := {"fields" => {"field" => <"f1">, "type" => <t1>():new():type()}};;
+            ::fields := {"fields" => {{"field" => <"f1">, "type" => <t1>():new():type()}[,{"field" => <"f2">, "type" => <t2>():new():type()}]}};;
         return self;;
     method type() class <type_name>;;
     return upper(<"type_name">)
-
-// fsharp: type USAddress = {Street:string; City:string; State:string; Zip:string}
-type USAddress = Street of STRING, City of STRING
-
-#xcommand let local <v> of <t> => local <v> := <t>():new()
-procedure experiment_type()
-    let local address of USAddress
-    ? address
-return
-
-// // this pragma create classes using an F# dsl for type
-// #xcommand TYPE <type_name> = [fields <uField1> OF <uType1> [, <uField2> OF <uType2>]] => ;
-//     CLASS <type_name>;;
-//     DATA <uField1>;;
-//     [;DATA <uField2>];;
-//     METHOD New(<uField1> [, <uField2>]);;
-//     ENDCLASS ;;
-//     METHOD New(<uField1> [, <uField2>]) CLASS <type_name>;; 
-//     ::<uField1> := <uField1>;;
-//     [::<uField2> := <uField2>;];;
-//     return Self;;
-
-// // https://fsharpforfunandprofit.com/posts/convenience-types/
-
 // // fsharp: type USAddress = {Street:string; City:string; State:string; Zip:string}
 type USAddress = Street of STRING, City of STRING
 // // fsharp: type UKAddress = {Street:string; Town:string; PostCode:string}
-// type UKAddress = fields Street of STRING, Town of STRING, PostCode of STRING
-// type BRAddress = fields Street of STRING, City of STRING
+type UKAddress = Street of STRING, Town of STRING, PostCode of STRING
+// created to demonstrate what happens when add or remove a type that is part of a union type.
+type BRAddress = Street of STRING, City of STRING
 
-// // union type
-// // this pragma create classes using an F# dsl for union type
-// // and the DSL for fsharp like match. You can often use a discriminated union as a simpler alternative to a small object hierarchy. For example, the following discriminated union could be used instead of a Shape base class that has derived types for circle, square, and so on.
-// // fsharp syntax
-// // [ attributes ]
-// // type [accessibility-modifier] type-name =
-// //     | case-identifier1 [of [ fieldname1 : ] type1 [ * [ fieldname2 : ] type2 ...]
-// //     | case-identifier2 [of [fieldname3 : ]type3 [ * [ fieldname4 : ]type4 ...]
-// //     [ member-list ]
+#xcommand let local <v> of <t> => local <v> := <t>():new()
 
-// // fsharp example:
-// // type Address =
-// //    | US of USAddress
-// //    | UK of UKAddress
+procedure experiment_type()
+    //let local address of USAddress Street "street", Town "town", PostCode "39801069"
+    let local address of USAddress
+    ? address:type()
+    ? hb_jsonencode(address:fields)
+return
+procedure main()
+    experiment_type()
+return
+
+// https://fsharpforfunandprofit.com/posts/convenience-types/
+
+// union type
+// this pragma create classes using an F# dsl for union type
+// and the DSL for fsharp like match. You can often use a discriminated union as a simpler alternative to a small object hierarchy. For example, the following discriminated union could be used instead of a Shape base class that has derived types for circle, square, and so on.
+// fsharp syntax
+// [ attributes ]
+// type [accessibility-modifier] type-name =
+//     | case-identifier1 [of [ fieldname1 : ] type1 [ * [ fieldname2 : ] type2 ...]
+//     | case-identifier2 [of [fieldname3 : ]type3 [ * [ fieldname4 : ]type4 ...]
+//     [ member-list ]
+
+// fsharp example:
+// type Address =
+//    | US of USAddress
+//    | UK of UKAddress
+
+// funcniona at‚ uma cl usula do let matcher address
+// #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
+//     CLASS <type_name>;;
+//         METHOD New() ;;
+//         method type();;
+//         data fields ;;
+//         data union ;;
+//     ENDCLASS;;
+//         method New() class <type_name>;;
+//             ::union := {"fields" => {{"field" => <"f1">, "type" => <t1>():new():type()}[,{"field" => <"f2">, "type" => <t2>():new():type()}]}};;
+//         return self;;
+//     method type() class <type_name>;;
+//     return upper(<"type_name">) ;;
+//     #xcommand let Matcher \<type_name> = match \<var_to_match> with ;
+//         WHEN \<t1> -> \<caselambda1> ;
+//         [;WHEN \<t2> -> \<caselambda1>] ;
+//             => ;
+// function ___Matcher\<type_name>(\<var_to_match>) EOC ;
+//                 do case EOC ;
+//                     case \<t1>():new():type_matches(\<var_to_match>) //EOC \<caselambda1>  \[;xxWHEN \<t2> -> \<caselambda1>] ;
+//                             // \[,case \<t2>():new():type_matches(\<var_to_match>) EOC \<caselambda2>] EOC ;
+
+
+// type Address = UNION US of USAddress, UK of UKAddress//, BR of BRAddress
+
+//  let Matcher Address = match address with ;
+//      WHEN USAddress -> qout("This is a US Address")// ;
+//     //  WHEN UKAddress -> qout("This is a UK Address")
+// //     // WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
+
+
+
+// funcniona at‚ uma cl usula do let matcher address
+#xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
+    CLASS <type_name>;;
+        METHOD New() ;;
+        method type();;
+        data fields ;;
+        data union ;;
+    ENDCLASS;;
+        method New() class <type_name>;;
+            ::union := {"fields" => {{"field" => <"f1">, "type" => <t1>():new():type()}[;{"field" => <"f2">, "type" => <t2>():new():type()}]}};;
+        return self;;
+    method type() class <type_name>;;
+    return upper(<"type_name">) ;;
+    #xcommand let Matcher \<type_name> = match \<var_to_match> with WHEN \<t1> -> \<caselambda1> \[,WHEN \<t2> -> \<caselambda1>]=> EOC ;
+    function ___Matcher\<type_name>(\<var_to_match>) EOC ;
+                do case EOC ;
+                    case \<t1>():new():type_matches(\<var_to_match>) EOC ;
+                        \<var_to_match>  EOC ;
+                //         \[; xxWHEN \<t2> -> \<caselambda1>] ;
+                            // \[,case \<t2>():new():type_matches(\<var_to_match>) EOC \<caselambda2>] EOC ;
+
+
+
+type Address = UNION US of USAddress, UK of UKAddress//, BR of BRAddress
+
+// #xcommand let Matcher<type_name> = match<var_to_match> with ;
+// WHEN <t1> -> <caselambda1> ;
+// [, WHEN <t2> -> <caselambda1>] ;
+// => ;
+// xxx <t1> ;; //EOC<caselambda1>  \[;xxWHEN<t2> -><caselambda1>] ;
+// [; xxx <t2> ] ;;
+
+ let Matcher Address = match address with ;
+    WHEN USAddress -> qout("This is a US Address") , ;
+    WHEN UKAddress -> qout("This is a UK Address")
+//     // WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // #xcommand TYPE <type_name> = UNION <case_identifier1> OF <type1> [, <case_identifier2> OF <type2>] => ;
 //     CLASS <type_name> ;;
 //         DATA <case_identifier1> ;;
 //      [;DATA <case_identifier2>] ;;
 //      ENDCLASS ;;
-//      #xcommand let Matcher \<type_name> = match \<var_to_match> with ;
+//      #xcommand let Matcher\<type_name> = match \<var_to_match> with ;
 //         WHEN \<type1> -> \<caselambda1> ;
 //         \[WHEN \<type2> -> \<caselambda2>\] ;
 //         => ;

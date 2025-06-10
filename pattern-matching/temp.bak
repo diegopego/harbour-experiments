@@ -1,33 +1,21 @@
 CLASS USAddress
+ METHOD New() 
+ method type()
+ data fields 
+ ENDCLASS
+ method New() class USAddress
+ ::fields := {"fields" => {"field" => "Street", "type" => STRING():new():type()}}
+ return self
+ method type() class USAddress
+ return upper("USAddress")
 
-   DATA Street
-
-   DATA City
-   METHOD New( Street, City )
-
-ENDCLASS
-
-METHOD New( Street, City ) CLASS USAddress
-
-   ::Street := Street
-   ::City := City
-
-   RETURN Self
-
-CLASS UKAddress
-
-   DATA Street
-
-   DATA Town
-   DATA PostCode
-   METHOD New( Street, Town, PostCode )
-
-ENDCLASS
-
-METHOD New( Street, Town, PostCode ) CLASS UKAddress
-
-   ::Street := Street
-   ::Town := Town
-   ::PostCode := PostCode
-
-   RETURN Self
+   CLASS UKAddress
+ METHOD New() 
+ method type()
+ data fields 
+ ENDCLASS
+ method New() class UKAddress
+ ::fields := {"fields" => {"field" => "Street", "type" => STRING():new():type()}}
+ return self
+ method type() class UKAddress
+ return upper("UKAddress")
