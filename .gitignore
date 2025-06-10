@@ -1,4 +1,3 @@
-.ppo
-.ppt
-.exe
-pattern-matching/exhaustive-do-case.exe
+*.ppo
+*.ppt
+*.exe
