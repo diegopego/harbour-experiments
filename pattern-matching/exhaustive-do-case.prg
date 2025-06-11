@@ -1,4 +1,4 @@
-#include "hbclass.ch"
+ #include "hbclass.ch"
 #define EOC ;; // END OF COMMAND. ALLOWS TO HAVE MORE THAN ONE EXPRESSION ON INDIRECT # DIRECTIVES
 
 
@@ -29,27 +29,60 @@
 // return
 
 
+
+
+#define false .f.
+#define true .t.
+
 CLASS STRING
+    METHOD New()
     method type()
+    method type_matches
 ENDCLASS
+
+method new() class STRING
+return self
 
 method type() class STRING
 return "STRING"
 
+method type_matches(t) class STRING
+return "STRING" == t:type()
 
 // this pragma create classes using an F# dsl for type
 // fsharp: type USAddress = {Street:string; City:string; State:string; Zip:string}
 #xcommand TYPE <type_name> = <f1> of <t1> [, <f2> of <t2>] => ;
     CLASS <type_name>;;
-        METHOD New() ;;
+        METHOD New(n) ;;
         method type();;
-        data fields ;;
+        method type_matches(t);;
+        data object ;;
     ENDCLASS;;
-        method New() class <type_name>;;
-            ::fields := {"fields" => {{"field" => <"f1">, "type" => <t1>():new():type()}[,{"field" => <"f2">, "type" => <t2>():new():type()}]}};;
+        method New(n) class <type_name>;;
+            QOUT(HB_JSONENCODE(n));;
+            ::object := {;
+                "type" => <"type_name">, ;
+                "mutable" => n\["mutable"\], ;
+                "fields" => ;
+                       {;
+                        <"f1"> => ;
+                            {"type" => <t1>():new():type(),"value" => n\["fields"\]\[<"f1">\]\["value"\]};
+                       [,<"f2"> => {"type" => <t2>():new():type(), "value" => n\["fields"\]\[<"f2">\]\["value"\]};
+                        ]}};;
         return self;;
     method type() class <type_name>;;
-    return upper(<"type_name">)
+    return upper(<"type_name">) ;;
+    method type_matches(t) class <type_name>;;
+    return upper(<"type_name">) == t:type();;
+    #xcommand let local \<v> of \<t> <f1> \<<f1>v1> [, <f2> \<<f2>v2>] => local \<v> := \<t>():new({"mutable" => false, "fields" => {<"f1"> => {"value" => \<<f1>v1>}[,<"f2"> => {"value" => \<<f2>v2>}]}})
+    // ideas for instantiating variables in a more controlable way. this would allow to create immutable variables for example
+    // let creates immutable objects
+    // #xcommand let local <v> of <t> => local <v> := <t>():new({"type" => "object","mutable" => false, ...})
+    // #xcommand let private <v> of <t> => private <v> := <t>():new({"type" => "object","mutable" => false, ...})
+    // #xcommand let <v> be <t> => <v> := <v>():set(<t>)
+    // // var creates mutable objects
+    // #xcommand var local <v> of <t> => local <v> := <t>():new({"type" => "object","mutable" => true, ...})
+    // #xcommand var <v> be <t> => <v> := <t>
 // // fsharp: type USAddress = {Street:string; City:string; State:string; Zip:string}
 type USAddress = Street of STRING, City of STRING
 // // fsharp: type UKAddress = {Street:string; Town:string; PostCode:string}
@@ -57,17 +90,16 @@ type UKAddress = Street of STRING, Town of STRING, PostCode of STRING
 // created to demonstrate what happens when add or remove a type that is part of a union type.
 type BRAddress = Street of STRING, City of STRING
 
-#xcommand let local <v> of <t> => local <v> := <t>():new()
 
 procedure experiment_type()
-    //let local address of USAddress Street "street", Town "town", PostCode "39801069"
-    let local address of USAddress
+    //{"type" => "USAddress", "mutable" => n["mutable"], "fields" => {{"Street" => {"type" => STRING():new():type(), "value" => n["fields"]["Street"]["value"]}},{"City" => {"type" => STRING():new():type(), "value" => n["fields"["City"]["value"]}}]}}
+    let local address of USAddress Street "101st Street", City "California"
     ? address:type()
-    ? hb_jsonencode(address:fields)
+    ? hb_jsonencode(address:object)
 return
-procedure main()
-    experiment_type()
-return
+
+// ==========================
+
 
 // https://fsharpforfunandprofit.com/posts/convenience-types/
 
@@ -151,7 +183,30 @@ return
 //     WHEN BRAddress -> qout("This is a BT Address")
 //     WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
 
-// type Address = UNION + let matcher v1
+// // type Address = UNION + let matcher v1
+// #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
+//     CLASS <type_name>;;
+//         METHOD New() ;;
+//         method type();;
+//         data fields ;;
+//         data union ;;
+//     ENDCLASS;;
+//          method New() class <type_name>;;
+//              ::union := {{"field" => <"f1">, "type" => <t1>():new():type()} [,{"field" => <"f2">, "type" => <t2>():new():type()}]};;
+//          return self;;
+//     method type() class <type_name>;;
+//     return upper(<"type_name">)  ;;
+//     #xcommand let Matcher <type_name> = match \<var_to_match> with WHEN <t1> -> \<caselambda<t1>> [, WHEN <t2> -> \<caselambda<t2>>] => ;
+//         function ___Matcher_<type_name>(\<var_to_match>) EOC ;
+//         do case EOC;
+//             case <t1>():new():type_matches(\<var_to_match>) EOC;
+//                 \<caselambda<t1>> ;
+//             [EOC case <t2>():new():type_matches(\<var_to_match>) ] EOC ; 
+//         end EOC ;
+//         return nil
+
+
+// type Address = UNION + let matcher v2
 #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
     CLASS <type_name>;;
         METHOD New() ;;
@@ -163,39 +218,86 @@ return
              ::union := {{"field" => <"f1">, "type" => <t1>():new():type()} [,{"field" => <"f2">, "type" => <t2>():new():type()}]};;
          return self;;
     method type() class <type_name>;;
-    return upper(<"type_name">) ;; 
-xcommand let Matcher <type_name> = match \<var_to_match> with WHEN <t1> -> \<caselambda<t1>> [,WHEN <t2> -> \<caselambda<t2>>] => "asdfasdf" <"type_name"> 
-
-     ;;
-    function ___Matcher<type_name>(\<var_to_match>) ;;
-    do case ;;
-        case <t1>():new():type_matches(\<var_to_match>) ;;
-           \<caselambda<t1>> ;;
-        [;case <t2>():new():type_matches(\<var_to_match>) ; \<caselambda<t2>>] ;;
-    end ;;
-    return nil
-
-// #xcommand let Matcher <type_name> = match \<var_to_match> with ;;
-//     WHEN <t1> -> \<caselambda<t1>> ;;
-//     [,WHEN <t2> -> \<caselambda<t2>>] => ;;
-//     function ___Matcher<type_name>(\<var_to_match>) ;;
-//     do case ;;
-//         case <t1>():new():type_matches(\<var_to_match>) ;;
-//            \<caselambda<t1>> ;;
-//         [;case <t2>():new():type_matches(\<var_to_match>) ; \<caselambda<t2>>] ;;
-//     end ;;
-//     return nil
-    
+    return upper(<"type_name">)  ;;
+    #xcommand let Matcher \<matcher_name> of <type_name> = match \<*x*> => #warning match <type_name> is not exausted. ;;
+    #xcommand let Matcher \<matcher_name> of <type_name> = match \<var_to_match> with WHEN <t1> -> \<caselambda<t1>> [, WHEN <t2> -> \<caselambda<t2>>] => ;
+        function ___Matcher_\<matcher_name>(\<var_to_match>) EOC ;
+        do case EOC;
+            case <t1>():new():type_matches(\<var_to_match>) EOC;
+                \<caselambda<t1>> ;
+            [EOC case <t2>():new():type_matches(\<var_to_match>) ] EOC ; 
+        end EOC ;
+        return nil ;;
+    #xcommand MATCH \<matcher_name> \<v> => ___Matcher_\<matcher_name>(\<v>)
+            
+// fsharp like DSL for union type
 type Address = UNION US of USAddress, UK of UKAddress, BR of BRAddress
 
-// isso funciona
-// #xcommand let Matcher Address = match <var_to_match> with WHEN USAddress -> <caselambdaUSAddress>, WHEN UKAddress -> <caselambdaUKAddress>, WHEN BRAddress -> <caselambdaBRAddress> => "NADA"
+// fsharp like DSL for matcher
+let Matcher AddressMatcher1 of Address = match address with ;
+    WHEN USAddress -> qout("This is a US Address"), ;
+    WHEN UKAddress -> qout("This is a UK Address"), ;
+    WHEN BRAddress -> qout("This is a BT Address")
+
+
+let Matcher AddressMatcher2 of Address = match address2 with ;
+    WHEN USAddress -> qout("This is a US Address"), ;
+    WHEN UKAddress -> qout("This is a UK Address") //         W0001  match Address is not exausted.
+
+
+procedure main()
+    experiment_type()
+    experiment_match()
+return
+
+procedure experiment_match()
+    let local address of USAddress Street "101st Street", City "California"
+    MATCH AddressMatcher1 address
+    // ideally, a compiler error should be raised when a type different than the defined on the matcher is passed here.
+    // this should be illegal
+    MATCH AddressMatcher1 "a" 
+return
+
+// ===========================
+// experiment with matching
+// this works to invalidate any let Matcher Address = match.
+// I hope that this will give me a better control over the compiler error messages.
+// #xcommand let Matcher <type_name> = match <*x*> => #warning match <type_name> is not exausted.
 
 // let Matcher Address = match address with ;
 //     WHEN USAddress -> qout("This is a US Address"), ;
 //     WHEN UKAddress -> qout("This is a UK Address"), ;
 //     WHEN BRAddress -> qout("This is a BT Address")
+// ===========================
 
+// ===========================
+// experiment with matching
+// #xcommand let Matcher Address = match <var_to_match> with WHEN USAddress -> <caselambdaUSAddress>, WHEN UKAddress -> <caselambdaUKAddress>, WHEN BRAddress -> <caselambdaBRAddress> => procedure experiment() ; qout("hello") ; return
+//
+// let Matcher Address = match address with ;
+//     WHEN USAddress -> qout("This is a US Address"), ;
+//     WHEN UKAddress -> qout("This is a UK Address"), ;
+//     WHEN BRAddress -> qout("This is a BT Address")
+// ===========================
+
+// ===========================
+// experiment with matching
+// #xcommand let Matcher Address = match <var_to_match> with WHEN <v> -> <l> [,WHEN <v> -> <l>] => procedure experiment() ; qout("hello") ; return
+//
+// let Matcher Address = match address with ;
+//     WHEN USAddress -> qout("This is a US Address"), ;
+//     WHEN UKAddress -> qout("This is a UK Address"), ;
+//     WHEN BRAddress -> qout("This is a BT Address")
+// ===========================
+
+
+// ===========================
+// gives syntax error if using an invalid when clause but it is not exhaustive.
+// #xcommand let Matcher Address = match <var_to_match> with WHEN <when_clause:USAddress,UKAddress,BRAddress> -> <l> [,WHEN <when_clause_2:USAddress,UKAddress,BRAddress> -> <l_2>] => procedure experiment() ; qout("hello") ; return
+// let Matcher Address = match address with ;
+//     WHEN USAddress -> qout("This is a US Address"), ;
+//     WHEN UKAddress -> qout("This is a UK Address")
+// ===========================
 
 
 // , ;
