@@ -61,7 +61,7 @@ return "INTEGER" == t:type()
         data object ;;
     ENDCLASS;;
         method New(n) class <type_name>;;
-            logger(HB_JSONENCODE(n));;
+            logger("New", HB_JSONENCODE(n));;
                 if empty(n) ;;
                     ::object := {;
                         "type" => <"type_name">, ;
@@ -142,20 +142,20 @@ return "INTEGER" == t:type()
 // ==========================
 
 type dinheiro = valor of INTEGER
-type cartao = valor of INTEGER, csv of string
+type cartao = valor of INTEGER, csv of string, expiration of string
 type pix = valor of INTEGER, data of STRING
 
 type formas_de_pagamento = union dinheiro of dinheiro, cartao of cartao, pix of pix
 
 let Matcher processar_formas_de_pagamento_matcher OF formas_de_pagamento = match pg with ;
     WHEN dinheiro -> dummy_processar_dinheiro(pg:object["fields"]["valor"]) , ;
-    WHEN cartao -> dummy_processar_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"]), ;
+    WHEN cartao -> dummy_processar_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"], pg:object["fields"]["expiration"]), ;
     when pix -> dummy_processar_pix(pg:object["fields"]["valor"], pg:object["fields"]["data"])
 
 
 let Matcher imprimir_formas_de_pagamento_matcher OF formas_de_pagamento = match pg with ;
     WHEN dinheiro -> dummy_imprimir_dinheiro(pg:object["fields"]["valor"]) , ;
-    WHEN cartao -> dummy_imprimir_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"]), ;
+    WHEN cartao -> dummy_imprimir_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"], pg:object["fields"]["expiration"]), ;
     when pix -> dummy_imprimir_pix(pg:object["fields"]["valor"], pg:object["fields"]["data"])
 
 
@@ -196,7 +196,7 @@ return
 
 procedure experiment_match()
     let local address of USAddress Street "101st Street", City "California"
-    let local mcartao of cartao valor 1000.01, csv "123"
+    let local mcartao of cartao valor 1000.01, csv "123", expiration "01/36"
     MATCH AddressMatcher1 address
 
     logger("experiment_match", HB_JSONENCODE(mcartao:object))
