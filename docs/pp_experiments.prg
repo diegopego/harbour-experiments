@@ -1,6 +1,3 @@
-// this is AI generated, do not treat as reference or documentation. it is just practicing
-// https://deepwiki.com/search/write-the-pp-directives-for-a_d1740588-2369-4e7b-831d-c5171e08a9a9
-
 // experimenting with the "restricted match marker"
 // =================
 // #xcommand ALIGN TO [<alinhamento:center,left>] => alinha(<alinhamento>)
@@ -70,13 +67,13 @@
 
 
 // // ciclyc <@> directive experiment
-// // Ele avisa via em tempo de compila‡Æo ao realizar um case inesperado.
+// // Ele avisa via em tempo de compilaâ€¡Ã†o ao realizar um case inesperado.
 // function compiler_should_raise_error_on_invalid_case(employee)
-//     // por brevidade, nÆo criei as diretivas pra o match, mas aqui estou simulando:
+//     // por brevidade, nÃ†o criei as diretivas pra o match, mas aqui estou simulando:
 //     // match my_payment as PAYMENT. isso criaria as seguintes diretivas:
 //     #command case <var1> => ;
 //         #warning "invalid" ; <@> case <var1>
-//     // aqui fa‡o a suposi‡Æo que typeof usa string para verificar o tipo, mas isso pode ser usado de outras formas, incluindo invocando a classe. ex.: Money():new():type
+//     // aqui faâ€¡o a suposiâ€¡Ã†o que typeof usa string para verificar o tipo, mas isso pode ser usado de outras formas, incluindo invocando a classe. ex.: Money():new():type
 //     #command case MONEY [<var1>] => ;
 //             DECLARED case typeof(my_payment,"MONEY") [<var1>]
 //     #command case CREDIT_CARD [<var1>] => ;
@@ -94,4 +91,4 @@
 //             ? "CREDIT_CARD .and. my_payment:value > 0"
 //     endcase
 // return nil
-// // endregion recursividade, referˆncia c¡clica, referencia ciclica
+// // endregion recursividade, referË†ncia cÂ¡clica, referencia ciclica
