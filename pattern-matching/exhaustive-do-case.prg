@@ -34,6 +34,23 @@ return "STRING"
 method type_matches(t) class STRING
 return "STRING" == t:type()
 
+
+
+CLASS INTEGER
+    METHOD New()
+    method type()
+    method type_matches
+ENDCLASS
+
+method new() class INTEGER
+return self
+
+method type() class INTEGER
+return "INTEGER"
+
+method type_matches(t) class INTEGER
+return "INTEGER" == t:type()
+
 // this pragma create classes using an F# dsl for type
 // fsharp: type USAddress = {Street:string; City:string; State:string; Zip:string}
 #xcommand TYPE <type_name> = <f1> of <t1> [, <f2> of <t2>] => ;
@@ -81,16 +98,6 @@ return "STRING" == t:type()
     // #xcommand var local <v> of <t> => local <v> := <t>():new({"type" => "object","mutable" => true, ...})
     // #xcommand var <v> be <t> => <v> := <t>
 
-// type declarations
-// ==========================
-// fsharp equivalent: type USAddress = {Street:string; City:string}
-type USAddress = Street of STRING, City of STRING
-// fsharp equivalent: type UKAddress = {Street:string; Town:string; PostCode:string}
-type UKAddress = Street of STRING, Town of STRING, PostCode of STRING
-// fsharp equivalent: type BRAddress = {Street:string; City:string}
-type BRAddress = Street of STRING, City of STRING
-// ==========================
-
 // UNION DSL factory + matcher DSL factory
 // ==========================
 #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
@@ -105,13 +112,13 @@ type BRAddress = Street of STRING, City of STRING
          return self;;
     method type() class <type_name>;;
     return upper(<"type_name">)  ;;
-    #xcommand let Matcher \<matcher_name> of <type_name> = match \<*x*> => #warning match <type_name> is not exausted. ;;
+    #xcommand let Matcher \<matcher_name> of <type_name> = match \<*x*> => #warning match is not exausted. union type: <type_name> ;;
     #xcommand let Matcher \<matcher_name> of <type_name> = match \<var_to_match> with WHEN <t1> -> \<caselambda<t1>> [, WHEN <t2> -> \<caselambda<t2>>] => ;
         function ___Matcher_\<matcher_name>(\<var_to_match>) EOC ;
         do case EOC;
             case <t1>():new():type_matches(\<var_to_match>) EOC;
                 \<caselambda<t1>> ;
-            [EOC case <t2>():new():type_matches(\<var_to_match>) ] EOC ; 
+            [EOC case <t2>():new():type_matches(\<var_to_match>) EOC \<caselambda<t2>> ] EOC ; 
         end EOC ;
         return nil ;;
     #xcommand MATCH \<matcher_name> \<v> => ___Matcher_\<matcher_name>(\<v>)
@@ -133,6 +140,34 @@ type BRAddress = Street of STRING, City of STRING
 
 // code usage
 // ==========================
+
+type dinheiro = valor of INTEGER
+type cartao = valor of INTEGER, csv of string
+type pix = valor of INTEGER, data of STRING
+
+type formas_de_pagamento = union dinheiro of dinheiro, cartao of cartao, pix of pix
+
+let Matcher processar_formas_de_pagamento_matcher OF formas_de_pagamento = match pg with ;
+    WHEN dinheiro -> dummy_processar_dinheiro(pg:object["fields"]["valor"]) , ;
+    WHEN cartao -> dummy_processar_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"]), ;
+    when pix -> dummy_processar_pix(pg:object["fields"]["valor"], pg:object["fields"]["data"])
+
+
+let Matcher imprimir_formas_de_pagamento_matcher OF formas_de_pagamento = match pg with ;
+    WHEN dinheiro -> dummy_imprimir_dinheiro(pg:object["fields"]["valor"]) , ;
+    WHEN cartao -> dummy_imprimir_cartao(pg:object["fields"]["valor"], pg:object["fields"]["csv"]), ;
+    when pix -> dummy_imprimir_pix(pg:object["fields"]["valor"], pg:object["fields"]["data"])
+
+
+// type declarations
+// fsharp equivalent: type USAddress = {Street:string; City:string}
+type USAddress = Street of STRING, City of STRING
+// fsharp equivalent: type UKAddress = {Street:string; Town:string; PostCode:string}
+type UKAddress = Street of STRING, Town of STRING, PostCode of STRING
+// fsharp equivalent: type BRAddress = {Street:string; City:string}
+type BRAddress = Street of STRING, City of STRING
+
+
 // fsharp like DSL for union type
 type Address = UNION US of USAddress, UK of UKAddress, BR of BRAddress
 
@@ -161,13 +196,46 @@ return
 
 procedure experiment_match()
     let local address of USAddress Street "101st Street", City "California"
+    let local mcartao of cartao valor 1000.01, csv "123"
     MATCH AddressMatcher1 address
+
+    logger("experiment_match", HB_JSONENCODE(mcartao:object))
+    MATCH processar_formas_de_pagamento_matcher mcartao
+    MATCH imprimir_formas_de_pagamento_matcher mcartao
+
     // ideally, a compiler error should be raised when a type different than the defined on the matcher is passed here.
     // this should be illegal
     // MATCH AddressMatcher1 "a" 
+
+
 return
 
 static procedure logger(...)
-qout("LOG:", ...)
+qout("LOG:", procline(1), ...)
+return
+
+procedure dummy_processar_dinheiro(...)
+    logger (procname(0), HB_JSONENCODE({...}))
+return
+procedure dummy_processar_cartao(...)
+    logger (procname(0), HB_JSONENCODE({...}))
+return
+procedure dummy_processar_pix(...)
+    logger (procname(0), HB_JSONENCODE({...}))
+return
+
+procedure dummy_imprimir_dinheiro(...)
+    logger (procname(0), HB_JSONENCODE({...}))
+return
+procedure dummy_imprimir_cartao(...)
+    logger (procname(0), HB_JSONENCODE({...}))
+return
+procedure dummy_imprimir_pix(...)
+    logger (procname(0), HB_JSONENCODE({...}))
 return
 // ==========================
+
+
+
+
+
