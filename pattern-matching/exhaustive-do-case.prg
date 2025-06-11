@@ -1,5 +1,13 @@
-//#include "hbclass.ch"
+#include "hbclass.ch"
 #define EOC ;; // END OF COMMAND. ALLOWS TO HAVE MORE THAN ONE EXPRESSION ON INDIRECT # DIRECTIVES
+
+
+// #xcommand ALIGN TO [<alinhamento:center,left>] => alinha(<alinhamento>)
+// function teste_alinha()
+//     align to CENTRO
+// return nil
+
+
 
 // references
 // C:\harbour\contrib\xhb\cstruct.ch
@@ -110,7 +118,40 @@ return
 
 
 
-// funcniona at‚ uma cl usula do let matcher address
+// type Address = UNION v1
+// #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
+//     CLASS <type_name>;;
+//         METHOD New() ;;
+//         method type();;
+//         data fields ;;
+//         data union ;;
+//     ENDCLASS;;
+//          method New() class <type_name>;;
+//              ::union := {{"field" => <"f1">, "type" => <t1>():new():type()} [,{"field" => <"f2">, "type" => <t2>():new():type()}]};;
+//          return self;;
+//     method type() class <type_name>;;
+//     return upper(<"type_name">)
+// type Address = UNION US of USAddress, UK of UKAddress, BR of BRAddress
+
+// this directive works for let matcher v1
+// #xcommand let Matcher <type_name> = match <var_to_match> with ;
+//      WHEN <t1> -> <caselambda1> ;
+//      [,WHEN <t2> -> <caselambda2>]=> ;
+//      function ___Matcher<type_name>(<var_to_match>) ;;
+//      do case ;;
+//          case <t1>():new():type_matches(<var_to_match>) ;;
+//             <caselambda1> ;;
+//          [;case <t2>():new():type_matches(<var_to_match>) ; <caselambda2>] ;;
+//      end ;;
+//      return nil
+//
+//  let Matcher Address = match address with ;
+//     WHEN USAddress -> qout("This is a US Address"), ;
+//     WHEN UKAddress -> qout("This is a UK Address"), ;
+//     WHEN BRAddress -> qout("This is a BT Address")
+//     WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
+
+// type Address = UNION + let matcher v1
 #xcommand TYPE <type_name> = UNION <f1> of <t1> [, <f2> of <t2>] => ;
     CLASS <type_name>;;
         METHOD New() ;;
@@ -118,34 +159,84 @@ return
         data fields ;;
         data union ;;
     ENDCLASS;;
-        method New() class <type_name>;;
-            ::union := {"fields" => {{"field" => <"f1">, "type" => <t1>():new():type()}[;{"field" => <"f2">, "type" => <t2>():new():type()}]}};;
-        return self;;
+         method New() class <type_name>;;
+             ::union := {{"field" => <"f1">, "type" => <t1>():new():type()} [,{"field" => <"f2">, "type" => <t2>():new():type()}]};;
+         return self;;
     method type() class <type_name>;;
-    return upper(<"type_name">) ;;
-    #xcommand let Matcher \<type_name> = match \<var_to_match> with WHEN \<t1> -> \<caselambda1> \[,WHEN \<t2> -> \<caselambda1>]=> EOC ;
-    function ___Matcher\<type_name>(\<var_to_match>) EOC ;
-                do case EOC ;
-                    case \<t1>():new():type_matches(\<var_to_match>) EOC ;
-                        \<var_to_match>  EOC ;
-                //         \[; xxWHEN \<t2> -> \<caselambda1>] ;
-                            // \[,case \<t2>():new():type_matches(\<var_to_match>) EOC \<caselambda2>] EOC ;
+    return upper(<"type_name">) ;; 
+xcommand let Matcher <type_name> = match \<var_to_match> with WHEN <t1> -> \<caselambda<t1>> [,WHEN <t2> -> \<caselambda<t2>>] => "asdfasdf" <"type_name"> 
+
+     ;;
+    function ___Matcher<type_name>(\<var_to_match>) ;;
+    do case ;;
+        case <t1>():new():type_matches(\<var_to_match>) ;;
+           \<caselambda<t1>> ;;
+        [;case <t2>():new():type_matches(\<var_to_match>) ; \<caselambda<t2>>] ;;
+    end ;;
+    return nil
+
+// #xcommand let Matcher <type_name> = match \<var_to_match> with ;;
+//     WHEN <t1> -> \<caselambda<t1>> ;;
+//     [,WHEN <t2> -> \<caselambda<t2>>] => ;;
+//     function ___Matcher<type_name>(\<var_to_match>) ;;
+//     do case ;;
+//         case <t1>():new():type_matches(\<var_to_match>) ;;
+//            \<caselambda<t1>> ;;
+//         [;case <t2>():new():type_matches(\<var_to_match>) ; \<caselambda<t2>>] ;;
+//     end ;;
+//     return nil
+    
+type Address = UNION US of USAddress, UK of UKAddress, BR of BRAddress
+
+// isso funciona
+// #xcommand let Matcher Address = match <var_to_match> with WHEN USAddress -> <caselambdaUSAddress>, WHEN UKAddress -> <caselambdaUKAddress>, WHEN BRAddress -> <caselambdaBRAddress> => "NADA"
+
+// let Matcher Address = match address with ;
+//     WHEN USAddress -> qout("This is a US Address"), ;
+//     WHEN UKAddress -> qout("This is a UK Address"), ;
+//     WHEN BRAddress -> qout("This is a BT Address")
 
 
 
-type Address = UNION US of USAddress, UK of UKAddress//, BR of BRAddress
+// , ;
+//     WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
 
-// #xcommand let Matcher<type_name> = match<var_to_match> with ;
-// WHEN <t1> -> <caselambda1> ;
-// [, WHEN <t2> -> <caselambda1>] ;
-// => ;
-// xxx <t1> ;; //EOC<caselambda1>  \[;xxWHEN<t2> -><caselambda1>] ;
-// [; xxx <t2> ] ;;
 
- let Matcher Address = match address with ;
-    WHEN USAddress -> qout("This is a US Address") , ;
-    WHEN UKAddress -> qout("This is a UK Address")
-//     // WHEN UndefinedAddress -> qout("should raise compiler error") // how could I place a compiler directive #error here?
+// quando tirei o [#] do xcommand para testar, produziu:
+// xcommand let Matcher Address = match <var_to_match> with ;
+//     WHEN USAddress -> <caselambda1> ;
+//     ,WHEN UKAddress -> <caselambda2>;
+//     ,WHEN BRAddress -> <caselambda2> => ;;
+//     function ___MatcherAddress(<var_to_match>) ;
+//         do case ;
+//             case USAddress():new():type_matches(<var_to_match>) ;
+//                 <caselambda1> ; ;
+//             case UKAddress():new():type_matches(<var_to_match>) ;
+//                 <caselambda2> ;
+//             case BRAddress():new():type_matches(<var_to_match>) ;
+//                 <caselambda2> ;
+//         end ;
+//     return nil
+
+// precisei corrigir
+// #xcommand let Matcher Address = match <var_to_match> with ;
+//     WHEN USAddress -> <caselambda1> ;
+//     ,WHEN UKAddress -> <caselambda2>;
+//     ,WHEN BRAddress -> <caselambda3> => ;
+//     function ___MatcherAddress(<var_to_match>) ;;
+//         do case ;;
+//             case USAddress():new():type_matches(<var_to_match>) ;;
+//                 <caselambda1> ;;
+//             case UKAddress():new():type_matches(<var_to_match>) ;; 
+//                 <caselambda2> ;;
+//             case BRAddress():new():type_matches(<var_to_match>) ;;
+//                 <caselambda3> ;;
+//         end ;;
+//     return nil
+
+
+
+
 
 
 
